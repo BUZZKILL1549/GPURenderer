@@ -28,9 +28,11 @@ const char* fragmentShaderSource = "#version 330 core\n"
 bool checkShaderCompilation(GLuint shader, const char* name);
 bool checkProgramLink(GLuint program);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 
 Camera* gCamera = nullptr;
 bool firstMouse = true;
+bool mouseCaptured = true;
 float lastX = 400.0f;
 float lastY = 400.0f;
 
@@ -71,6 +73,7 @@ int main() {
 	gCamera = &camera;
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// make vertex and fragment shaders
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -208,6 +211,23 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shaderProgram);
 
+		static bool escPressedLastFrame = false;
+		bool escPressed = glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+		if (escPressed && !escPressedLastFrame) {
+			mouseCaptured = !mouseCaptured;
+			glfwSetInputMode(window, GLFW_CURSOR, mouseCaptured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+			firstMouse = true;
+		}
+		escPressedLastFrame = escPressed;
+
+		if (!mouseCaptured &&
+			glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+
+			mouseCaptured = true;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			firstMouse = true;
+		}
+
 		float currentFrame = glfwGetTime();
 		float deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -300,4 +320,14 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
 	lastY = yPos;
 
 	gCamera->processMouse(xOffset, yOffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
+	if (!gCamera) return;
+
+	gCamera->speed += static_cast<float>(yOffset) * 0.5f;
+
+	// clamp speed
+	if (gCamera->speed < 0.1f) gCamera->speed = 0.1f;
+	if (gCamera->speed > 20.0f) gCamera->speed = 20.0f;
 }
