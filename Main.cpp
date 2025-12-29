@@ -27,7 +27,12 @@ const char* fragmentShaderSource = "#version 330 core\n"
 
 bool checkShaderCompilation(GLuint shader, const char* name);
 bool checkProgramLink(GLuint program);
-void cameraMovement(GLFWwindow *window, float &camX, float &camY, float &camZ, float &camSpeed);
+void mouse_callback(GLFWwindow* window, double xPos, double yPos);
+
+Camera* gCamera = nullptr;
+bool firstMouse = true;
+float lastX = 400.0f;
+float lastY = 400.0f;
 
 int main() {
 	// wireframe mode toggle
@@ -62,6 +67,10 @@ int main() {
 	// creating a starting and ending position on the screen for opengl
 	glViewport(0, 0, 800, 800);
 	glEnable(GL_DEPTH_TEST);
+
+	gCamera = &camera;
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// make vertex and fragment shaders
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -112,8 +121,6 @@ int main() {
 		0,			0, (far + near) / (near - far),	   -1,
 		0,			0, (2 * far * near) / (near - far), 0
 	};
-
-
 
 	/*
 	GLfloat vertices[] = {
@@ -276,4 +283,21 @@ bool checkProgramLink(GLuint program) {
 	}
 
 	return true;
+}
+
+void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
+	if (firstMouse) {
+		lastX = xPos;
+		lastY = yPos;
+		firstMouse = false;
+		return;
+	}
+
+	float xOffset = xPos - lastX;
+	float yOffset = lastY - yPos;
+
+	lastX = xPos;
+	lastY = yPos;
+
+	gCamera->processMouse(xOffset, yOffset);
 }

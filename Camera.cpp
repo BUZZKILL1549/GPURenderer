@@ -58,6 +58,27 @@ void Camera::processKeyboard(GLFWwindow* window, float deltaTime) {
         position.y += right.y * velocity;
         position.z += right.z * velocity;
     }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        position.y += velocity;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        position.y -= velocity;
+    }
+}
+
+void Camera::processMouse(float xOffset, float yOffset) {
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    yaw += xOffset;
+    pitch += yOffset;
+
+    if (pitch > 89.0f) {
+        pitch = 89.0f;
+    }
+    if (pitch < -89.0f) {
+        pitch = -89.0f;
+    }
 }
 
 // ----------------------------

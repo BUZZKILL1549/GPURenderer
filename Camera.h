@@ -9,10 +9,13 @@ public:
     float yaw;
     float pitch;
     float speed;
+    float sensitivity = 0.1f;
 
     Camera(Vec3 startPos = { 0, 0, 3 }, float startYaw = -90.0f, float startPitch = 0.0f, float camSpeed = 2.5f);
 
     void processKeyboard(GLFWwindow* window, float deltaTime);
-    Vec3 getForwardVector() const;
+    void processMouse(float xOffset, float yOffset);
     void getViewMatrix(float* view) const; // fill 4x4 column-major matrix
+private:
+    Vec3 getForwardVector() const;
 };
